@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "hoclieu-cloud-storage",
+  "private_key_id": "efe43cc00c9c61b5f6f7b5d927ae890a6dfe1612",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCp7FVIOesUYjst\nEKTJoFqOt07hzQhhh7z0HmcTX0/I3Z6qGG1IJnCWqZxpkZylpm0eB2w/LMybnMES\ndE2B5MtQIcw5qqax5TDT8sOKXiyYUsco4v7z0GxEUagJv4/Th/0c3BjKTno+NKZS\npqh48Koj7fb/lyliYpmd45/93jC027MjOnR0+dY5v3AdtwKR7t9Oj++XruslMaHt\n9x+uTNqEmVNYhQXBOi0uv0yRGGcmq5T2yQ0Rn44JditTr5NuCbRQzmNiNwxiQ+cI\nJZwhg29GncRI/a8X6vep9Ps3CWlmv/GAJqPrkBd8RNGJ4Mk3UOC3RUZdGH0In5X4\nqevMTnYhAgMBAAECggEAHw0Y6IHs+2SX+7w24MF0yu+kco7NIUV0ugd0Po4EPmiB\nPgQItE6R9HY6JvB896hZ+ErS9Rhyq10RyxWFtF7i6FnEwCT3ITsImTKbmQVskMlP\nq6EPhe5oWnOxiVaAKd+H2WY/AXklzYhBfIkH8FHKRZaOtFYjMd9iwv99lR6tN99B\nnrQMo7rXk8R3KLugoNcb4bMvuEh2xPbYo8X2cdmxL7XwAv/NzVOpG51Cp++swSix\n0wfSSBQv5XIQmKfmeTR0krLsNbH0GkUzQvG/oKUvSwmbJlrx1kQoefwCQ790DPbm\nIlEFWbEuuBzlyW0AFaoOg2PI49QriEg2X9LMGtp/oQKBgQDcGBDjEXMRZKzyCCpk\nT92Q/LY6ALWGebayjzo6S/aGlVTtVimEZHV/so6LgFHl/N9eLM2o339ItDDBHLKp\nTLOl4of+q9sEYRZI6V+8txe8rPzQ2IKR+HoydxKL8QLzjjudoyGabdH/r02vRWnS\nQCYJf0thdEZqO5zrhpItosRA6wKBgQDFpPLx16cE0byVZrgGelXHjC8u7obWchJ/\n/MefRknzSOT7R56x0bT6dFvipKXpobq1FbQjYrmqiQt8HNAhABkNw8pDscgSAPq1\nt2Bo2wM2cWwl40S6mI65RJLTJdbA0vtIjQFz+Lqp/EHo2CgY8HPFqMryQaMPSRUp\n2KxD8PdCIwKBgAo9UGPQBwNzJJyqBpbeJFe/ehbeu5NDDF3oTfQyXojKX8Ye8RWI\nuvKy8vDIiobhqd6uxO6rXzeZsn75f9JikCUSkfMmOa1NewTvXpXgCsmrXqO0vvZd\nkgnRAlriXpnILzvZQBH4NAHqPPn/h7nRZDOi6XXiO/hrR5SpkRlwbiL7AoGBAISd\nhz3q23CKYqVEhRojn8cDMu2ksujVJcCnFjKy8Q/Cy5Innj3mXi7nQHg0zfaTxDmZ\nVIOhzL62sfQXSTe7XxQzWVZOxdX+vjqLzq7Mtb0kIdLSSd2CW9HIR1RSQWSkrGMj\n6eOs82L3linsUAtb2/K2rWYb0JODECZB8mSsHNxNAoGAJ+RSXF/qS+69JX6zdm+9\neDygdWCvntxArozmA8yPceca30hBU7BYX5EvnFoR2duBOG0QpHcJr/LV2duMnEaW\nNJYVG9oafdnDkkzx2KA9nhKWVuhnq/PMAvocTnVFwKa4VT9/fa0AoP7z2aZ6QYHF\nKPKlIeEmShHqkk9/rnklphY=\n-----END PRIVATE KEY-----\n",
+  "client_email": "manhnv-hoclieu@hoclieu-cloud-storage.iam.gserviceaccount.com",
+  "client_id": "102141690157279706772",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/manhnv-hoclieu%40hoclieu-cloud-storage.iam.gserviceaccount.com"
+}

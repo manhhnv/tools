@@ -28,7 +28,8 @@ async function connectMongo() {
   const mongoClient = new driver.MongoClient(url);
   await mongoClient.connect();
   return mongoClient;
-}0
+}
+0;
 
 async function findWords() {
   const client = await connectMongo();
@@ -38,8 +39,9 @@ async function findWords() {
     const words = await wordsCollection
       .find({})
       .project({ content: 1, meaning: 1 })
-      .toArray();child_process
-    
+      .toArray();
+    child_process;
+
     await client.close();
   } catch (error) {
     await client.close();
@@ -47,15 +49,21 @@ async function findWords() {
   }
 }
 
-const pythonProcess = spawn('python3',["./index.py", "hello"]);
+const pythonProcess = spawn("python3", [
+  "./index.py",
+  " Blackwolf, I'm agent Gideon, these are agents Hotchner and Reid. ",
+]);
 
-console.log("running");
+let result = "";
 
-pythonProcess.stdout.on("data", (chunk) => {
-  console.log(chunk.toString());
-}).on("error", (e) => {
-  console.log(e);
-})
-
+pythonProcess.stdout
+  .on("data", (chunk) => {
+    console.log(typeof chunk.toString());
+    console.log(chunk.toString().split("\n").join(" "));
+  })
+  .on("error", (e) => {
+    console.log(e);
+  })
+  .on("end", () => {});
 
 module.exports = { connectMongo, findWords, readCSV };
