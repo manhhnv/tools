@@ -39,7 +39,6 @@ async function findWords() {
     const words = await wordsCollection
       .find({ bookNId: 10, unitNId: 4900 })
       .project({ content: 1, meaning: 1 })
-      .limit(1)
       .toArray();
     await client.close();
     return words;
@@ -80,34 +79,32 @@ async function main() {
   const n = Math.floor(csvData.length / 100) + 1;
   const parsedData = [];
 
+  const listContents = words.map((element) => element.content)
+  words.includes
+
   for (const word of words) {
     for (let i = 0; i < n; i++) {
-      const start = i * 1000;
-      const end = start + 1000;
+      const start = i * 100;
+      const end = start + 100;
       const data = await Promise.all(
         csvData.slice(start, end).map((el) => {
           return parseSentence(el.en).then();
         })
       );
+      console.log(data)
       parsedData.push(...data);
-      for (let j = 0; j < data.length; j++) {
-        if (data.includes(word)) {
-          console.log(csvData[start + j])
+      for (let j = 0; j < parsedData.length; j++) {
+        for (const content of listContents) {
+          if (parsedData[j].includes(content)) {
+            
+          }
         }
       }
     }
   }
 
   fs.writeFile("./parsed.json", JSON.stringify(parsedData));
-  // console.log(parsedData.length);
 
-  // const fragmentParsed = async (en) => {};
-  // const parsed = await Promise.all(
-  //   csvData.slice(0, 100).map((el) => {
-  //     return parseSentence(el.en).then();
-  //   })
-  // );
-  // console.log(parsed.length);
   function findMatchedSentences(en) {
     return new Promise((resolve, reject) => { });
   }
