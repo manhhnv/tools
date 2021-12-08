@@ -37,33 +37,83 @@ async function findWords() {
     const dbo = client.db("tuvung");
     const wordsCollection = dbo.collection("words");
     const words = await wordsCollection
-      .find({})
+      .find({ bookNId: 10, unitNId: 4900 })
       .project({ content: 1, meaning: 1 })
+      .limit(1)
       .toArray();
-    child_process;
-
     await client.close();
+    return words;
   } catch (error) {
     await client.close();
     throw error;
   }
 }
 
-const pythonProcess = spawn("python3", [
-  "./index.py",
-  " Blackwolf, I'm agent Gideon, these are agents Hotchner and Reid. ",
-]);
+async function parseSentence(sentence) {
+  const pythonProcess = spawn("python3", ["./index.py", sentence]);
+  return new Promise((resolve, reject) => {
+    const regex = /[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/g;
+    let result;
+    pythonProcess.stdout
+      .on("data", (chunk) => {
+        result = chunk
+          .toString()
+          .split("\n")
+          .map((el) => el.trim().replace(regex, ""))
+          .filter((el) => el);
+      })
+      .on("error", (e) => {
+        reject(e);
+      })
+      .on("end", () => {
+        resolve(result);
+      });
+  });
+}
 
-let result = "";
+async function main() {
+  const [csvData, words] = await Promise.all([
+    readCSV("/home/manhnv/Downloads/en-vi.csv"),
+    findWords(),
+  ]);
 
-pythonProcess.stdout
-  .on("data", (chunk) => {
-    console.log(typeof chunk.toString());
-    console.log(chunk.toString().split("\n").join(" "));
-  })
-  .on("error", (e) => {
-    console.log(e);
-  })
-  .on("end", () => {});
+  const n = Math.floor(csvData.length / 100) + 1;
+  const parsedData = [];
 
-module.exports = { connectMongo, findWords, readCSV };
+  for (const word of words) {
+    for (let i = 0; i < n; i++) {
+      const start = i * 1000;
+      const end = start + 1000;
+      const data = await Promise.all(
+        csvData.slice(start, end).map((el) => {
+          return parseSentence(el.en).then();
+        })
+      );
+      parsedData.push(...data);
+      for (let j = 0; j < data.length; j++) {
+        if (data.includes(word)) {
+          console.log(csvData[start + j])
+        }
+      }
+    }
+  }
+
+  fs.writeFile("./parsed.json", JSON.stringify(parsedData));
+  // console.log(parsedData.length);
+
+  // const fragmentParsed = async (en) => {};
+  // const parsed = await Promise.all(
+  //   csvData.slice(0, 100).map((el) => {
+  //     return parseSentence(el.en).then();
+  //   })
+  // );
+  // console.log(parsed.length);
+  function findMatchedSentences(en) {
+    return new Promise((resolve, reject) => { });
+  }
+  console.log(csvData.length);
+}
+
+main().then(() => { });
+
+module.exports = { connectMongo, findWords, readCSV, parseSentence };

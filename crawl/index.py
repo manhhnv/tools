@@ -46,9 +46,6 @@ def format():
     for token, tag in pos_tag(tokens):
         lemma = lemma_function.lemmatize(token, tag_map[tag[0]])
         print(lemma)
-    #     result += lemma + " "
-    # result = " " + result.strip() + " "
-    # print(result)
     sys.stdout.flush()
 
 format()
