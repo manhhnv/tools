@@ -20,7 +20,7 @@ const main = async () => {
     const files = walkFiles(directory);
     const rawData = fs.readFileSync(files[0]);
     const data = JSON.parse(rawData);
-    const sheetData = [["word_id", "content", "meaning", "en", "vi"]];
+    const sheetData = [["word_id", "content", "meaning", "en", "vi", "unlearned"]];
     for (const item of data.items) {
       item.sentences.forEach((sentence) => {
         sheetData.push([
@@ -29,6 +29,7 @@ const main = async () => {
           item.meaning,
           sentence.en,
           sentence.vi,
+          JSON.stringify(sentence.unlearned)
         ]);
       });
     }

@@ -5,6 +5,7 @@ import createConnection from "./database";
 import { findWords, allPrevWords } from "./words";
 import text_lemmas from "./text_lemmas.json";
 import fs from "fs";
+import commonWords from "./common.json";
 
 const main = async (book, unit, wordsCollection) => {
   //   const connection = await createConnection();
@@ -14,45 +15,95 @@ const main = async (book, unit, wordsCollection) => {
     findWords(book.nId, unit.nId, wordsCollection),
     allPrevWords(book.nId, unit.nId, wordsCollection),
   ]);
+
+  // console.log(wordsInUnit)
+  // console.log(JSON.stringify(prevWords), null, 4)
   const regex = /[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/g;
+  // if (book.grade >= 6) {
+
+  // }
   const matchSentences = (word) => {
     const index = wordsInUnit.findIndex((e) => e._id === word._id);
+
     if (index !== -1) {
       const results = { ...word };
       const sentences = [];
       const withoutPunctuation = new Set();
 
-      const { content } = word;
-      const meaning = word.meaning.toLowerCase();
+      const content = word.content.toLowerCase();
+      const meanings = word.meaning.toLowerCase()
+        .toLowerCase()
+        .split(/[\\,-\\(\\)]/)
+        .map((e) => e.trim().replace(regex, "").replace("…", ""))
+        .filter((e) => e);
       const prev = [...wordsInUnit.slice(0, index), ...prevWords];
-      const prevContents = prev.map((e) => e.content);
+      const prevWordsContent = prev.map((e) => e.content);
+      // ["ball", "bike"]
+      // console.log(meanings)
+
       for (const lm of text_lemmas) {
         if (text_lemmas.length <= 1) break;
-        let lemmas = lm.lemmas;
-        const translate = lm.vi.toLowerCase();
-        if (lemmas.includes(content) && translate.includes(meaning)) {
-          lemmas = lemmas.map((e) => e.replace(regex, "")).filter((e) => e);
-          let counter = 0;
-          for (const w_lm of lemmas) {
-            if (counter > 2) break;
+        const unlearned =[];
 
-            // Nếu không có từ trước đó hoặc mảng các từ trước đó không chứa w_lemma thì counter ++
-            if (prevContents?.length <= 0 || !prevContents.includes(w_lm)) {
-              counter++;
+        // str.split(/[\\.!?]/)
+
+        let lemmas = lm.lemmas;
+        const vi = lm.vi.toLowerCase().replace(regex, "");
+
+        // Nếu câu chứa từ tiếng anh và nghĩa tiếng việt thì duyệt tiếp
+        // "hello" "Hello teacher",
+        if (lemmas.includes(content)) {
+          let isContainMeaning = false
+          for (const meaning of meanings) {
+            if (vi.includes(meaning)) {
+              isContainMeaning = true;
+              break;
             }
           }
-          if (counter <= 2) {
-            const en = lm.en.trim().replace(regex, "");
-            const vi = lm.vi.trim().replace(regex, "");
+          // if (!isContainMeaning) {
+          //   continue;
+          // };
+          // else {console.log(meanings); console.log(vi)}
+          lemmas = lemmas
+            .map((e) => e.replace(regex, "").toLowerCase())
+            .filter((e) => e);
+
+          if (book.grade >= 6) {
+            lemmas = lemmas.filter((e) => !commonWords.includes(e));
+          }
+          // let counter = 0;
+          for (const w_lm of lemmas) {
+            if (unlearned.length > 2) break;
+
+            // Nếu không có từ trước đó hoặc mảng các từ trước đó không chứa w_lemma thì counter ++
+            if (
+              w_lm &&
+              prevWordsContent?.length == 0 ||
+              !prevWordsContent.includes(w_lm)
+            ) {
+              unlearned.push(w_lm)
+              // console.log(w_lm)
+              // counter++;
+            }
+          }
+          const en = lm.en.trim().replace(regex, "");
             if (!withoutPunctuation.has(en)) {
               sentences.push({
                 en: en,
-                vi: vi,
+                vi: isContainMeaning ? vi : '',
+                unlearned: unlearned,
               });
               withoutPunctuation.add(en);
             }
-          }
         }
+        // else if (lemmas.includes(content) && !vi.includes(meaning)) {
+        //   console.log({
+        //     en: lm.en.trim().replace(regex, ""),
+        //     vi: vi,
+        //     meaning: meaning,
+        //     word: word.content,
+        //   });
+        // }
       }
       results["sentences"] = [...sentences];
       return [...sentences].length > 0 ? results : null;
@@ -88,6 +139,7 @@ const root = async () => {
   const booksCollection = dbo.collection("books");
 
   const books = await booksCollection.find().toArray();
+  // console.log(books);
   console.log(process.cwd());
 
   for (const book of books) {
