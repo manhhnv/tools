@@ -35,7 +35,9 @@ const main = async (book, unit, wordsCollection) => {
           let counter = 0;
           for (const w_lm of lemmas) {
             if (counter > 2) break;
-            if (!prevContents.includes(w_lm)) {
+
+            // Nếu không có từ trước đó hoặc mảng các từ trước đó không chứa w_lemma thì counter ++
+            if (prevContents?.length <= 0 || !prevContents.includes(w_lm)) {
               counter++;
             }
           }
