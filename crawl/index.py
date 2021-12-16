@@ -48,8 +48,9 @@ def format(text: str, vi: str):
     result = {"en": text, "vi": vi}
     lemmas = list()
     for token, tag in pos_tag(tokens):
-        lemma = lemma_function.lemmatize(token, tag_map[tag[0]])
-        lemmas.append(lemma)
+        if "NNP" not in tag:
+            lemma = lemma_function.lemmatize(token, tag_map[tag[0]])
+            lemmas.append(lemma)
     result.update({"lemmas": lemmas})
     return result
 

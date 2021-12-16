@@ -15,28 +15,53 @@ const main = async () => {
     .filter((e) => e.isDirectory());
 
   const listNames = dirs.map((e) => e.name);
-  listNames.forEach(async (e, i) => {
-    const directory = path.resolve(process.cwd(), "data", e);
-    const files = walkFiles(directory);
-    const rawData = fs.readFileSync(files[0]);
-    const data = JSON.parse(rawData);
-    const sheetData = [["word_id", "content", "meaning", "en", "vi", "unlearned"]];
-    for (const item of data.items) {
-      item.sentences.forEach((sentence) => {
-        sheetData.push([
-          item._id,
-          item.content,
-          item.meaning,
-          sentence.en,
-          sentence.vi,
-          JSON.stringify(sentence.unlearned)
-        ]);
-      });
+  // console.log(listNames);
+  async function write(dir) {
+    const sheetData = [
+      [
+        "word_id",
+        "từ tiếng anh",
+        "nghĩa tiếng việt",
+        "câu tiếng anh",
+        "câu tiếng việt",
+        "trùng nghĩa",
+        "số từ en",
+        "số từ vi",
+      ],
+    ];
+    const temp = [];
+    const directory = path.resolve(process.cwd(), "data", dir);
+    let files = walkFiles(directory);
+    // console.log(files)
+    // files = files.slice(10, 15);
+    for (const file of files) {
+      const rawData = fs.readFileSync(file);
+      const data = JSON.parse(rawData);
+      for (const item of data.items) {
+        if (item.sentences?.length > 0) {
+          item.sentences.forEach((sentence) => {
+            sheetData.push([
+              item._id,
+              item.content,
+              item.meaning,
+              sentence.en,
+              sentence.vi,
+              sentence.matchMeaning,
+              String(sentence.enSplit),
+              String(sentence.viSplit),
+            ]);
+          });
+        } else {
+          temp.push([item._id, item.content, item.meaning]);
+        }
+      }
     }
-    await googlSheet.clearAll(e);
-    await googlSheet.writeAll(e, sheetData);
-    console.log(`${i}/${listNames.length}`);
-  });
+    sheetData.push(...temp);
+    await googlSheet.clearAll(dir);
+    await googlSheet.writeAll(dir, sheetData);
+    // console.log(`${i}/${listNames.length}`);
+  }
+  await write('Tiếng Anh 9 Tập 2')
 };
 
 const walkFiles = (directory) => {
@@ -46,6 +71,7 @@ const walkFiles = (directory) => {
     withFileTypes: true,
   });
   files.forEach((file) => {
+    // console.log(file)
     const statPath = path.resolve(directory, file.name);
     if (file.isDirectory()) {
       const res = walkFiles(statPath);

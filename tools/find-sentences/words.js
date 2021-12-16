@@ -29,7 +29,7 @@ const allPrevWords = async (bookNId, unitNId, collection) => {
             $eq: bookNId,
           },
           unitNId: {
-            $lt: unitNId,
+            $lte: unitNId,
           },
         },
       ],
