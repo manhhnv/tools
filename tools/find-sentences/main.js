@@ -1,6 +1,3 @@
-/* eslint-disable camelcase */
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable no-underscore-dangle */
 import createConnection from "./database";
 import { findWords, allPrevWords } from "./words";
 import text_lemmas from "./text_lemmas.json";
@@ -8,20 +5,12 @@ import fs from "fs";
 import commonWords from "./common.json";
 
 const main = async (book, unit, wordsCollection) => {
-  //   const connection = await createConnection();
-  //   const dbo = connection.db("tuvung");
-  //   const wordsCollection = dbo.collection("words");
   const [wordsInUnit, prevWords] = await Promise.all([
     findWords(book.nId, unit.nId, wordsCollection),
     allPrevWords(book.nId, unit.nId, wordsCollection),
   ]);
 
-  // console.log(wordsInUnit)
-  // console.log(JSON.stringify(prevWords), null, 4)
   const regex = /[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~”“’‘’—◆​]/g;
-  // if (book.grade >= 6) {
-
-  // }
   const matchSentences = (word) => {
     const index = wordsInUnit.findIndex((e) => e._id === word._id);
 
@@ -30,7 +19,9 @@ const main = async (book, unit, wordsCollection) => {
       const sentences = [];
       const withoutPunctuation = new Set();
 
-      const content = word.content.toLowerCase().replace(regex, "");
+      const content = String(word.content.trim().toLowerCase().replace(regex, ""));
+
+      const contentSplit = content.split(" ");
       const meanings = word.meaning
         .toLowerCase()
         .toLowerCase()
@@ -39,70 +30,38 @@ const main = async (book, unit, wordsCollection) => {
         .filter((e) => e);
       const prev = [...wordsInUnit.slice(0, index), ...prevWords];
       const prevWordsContent = prev.map((e) => e.content);
-      // ["ball", "bike"]
-      // console.log(meanings)
       const notMatchVi = [];
       for (const lm of text_lemmas) {
         if (text_lemmas.length <= 1) break;
         const en = lm.en.trim().replace(regex, "");
         const unlearned = [];
-
-        // str.split(/[\\.!?]/)
-
         let lemmas = lm.lemmas;
-        const vi = lm.vi.toLowerCase().replace(regex, "");
 
-        /**
-         * em xuất ra hết, câu tiếng Anh, câu Tiếng Việt, và thêm 1 cột số từ mới Tiếng Anh, có thể là 0, 1, 2, 3, v.v..
-         * và nghĩa tiếng Việt xuất hiện, nếu ko có vẫn xuất ra và ghi rõ ko có nghĩa tiếng Việt hoặc để trống.
+        lemmas = lemmas
+          .map((e) => e.replace(regex, "").toLowerCase())
+          .filter((e) => e.length > 1);
+        lemmas = lemmas.filter((e) => isNaN(Number(e)));
+        const vi = lm.vi.replace(regex, "");
+        let contentCounter = 0;
 
-         */
-        // Nếu câu chứa từ tiếng anh và nghĩa tiếng việt thì duyệt tiếp
-        // "hello" "Hello teacher",
-
-        //Container en-words ?
-        if (lemmas.includes(content)) {
+        for (const item of contentSplit) {
+          if (lemmas.includes(item)) {
+            contentCounter = contentCounter + 1;
+          }
+        }
+        if (contentCounter === contentSplit.length) {
           let isContainMeaning = false;
-
-          // Check is contain one of meanings
-          // for (const meaning of meanings) {
-          //   if (vi.includes(meaning)) {
-          //     isContainMeaning = true;
-          //     break;
-          //   }
-          // }
-          // if (!isContainMeaning) {
-          //   notMatchVi.push({
-          //     en: en,
-          //     vi: lm.vi.trim(),
-          //     unlearned: unlearned,
-          //     unlearnedCounter: unlearned.length,
-          //     matchMeaning: isContainMeaning,
-          //     viSplit: lm.vi.split(' ').length,
-          //     enSplit: en.split(' ').length
-          //   })
-          //   continue;
-          // };
-          // else {console.log(meanings); console.log(vi)}
-          lemmas = lemmas
-            .map((e) => e.replace(regex, "").toLowerCase())
-            .filter((e) => e.length > 1);
-          lemmas = lemmas.filter((e) => isNaN(Number(e)));
-
           if (book.grade >= 6) {
             lemmas = lemmas.filter((e) => !commonWords.includes(e));
           }
           let counter = 0;
           for (const w_lm of lemmas) {
             if (unlearned.length > 2) break;
-
-            // Nếu không có từ trước đó hoặc mảng các từ trước đó không chứa w_lemma thì counter ++
             if (
               prevWordsContent?.length == 0 ||
               !prevWordsContent.includes(w_lm)
             ) {
               unlearned.push(w_lm);
-              // console.log(w_lm)
               counter++;
             }
           }
@@ -127,7 +86,7 @@ const main = async (book, unit, wordsCollection) => {
           if (counter <= 2) {
             if (!withoutPunctuation.has(en)) {
               sentences.push({
-                en: en,
+                en: lm.en.trim(),
                 vi: lm.vi.trim(),
                 unlearned: unlearned,
                 unlearnedCounter: unlearned.length,
@@ -137,12 +96,13 @@ const main = async (book, unit, wordsCollection) => {
               });
               withoutPunctuation.add(en);
             }
+            continue;
           }
         }
       }
       if (sentences?.length < 10) {
         const currentLen = 10 - sentences.length;
-        sentences.push(...notMatchVi.slice(0, currentLen))
+        sentences.push(...notMatchVi.slice(0, currentLen));
       }
       results["sentences"] = [...sentences];
       return results;
@@ -177,7 +137,7 @@ const root = async () => {
   const wordsCollection = dbo.collection("words");
   const booksCollection = dbo.collection("books");
 
-  const books = await booksCollection.find().toArray();
+  const books = await booksCollection.find({grade: 1}).toArray();
   // console.log(books);
   console.log(process.cwd());
 

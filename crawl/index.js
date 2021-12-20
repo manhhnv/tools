@@ -2,7 +2,7 @@ const driver = require('mongodb');
 const csv = require('csv-parser');
 const fs = require('fs');
 const { spawn } = require('child_process');
-const lemmasData = require('./text_lemmas.json');
+// const lemmasData = require('./text_lemmas.json');
 
 const url = 'mongodb://localhost:27017/tuvung';
 
@@ -12,9 +12,9 @@ function readCSV(path) {
     fs.createReadStream(path)
       .pipe(csv({ headers: false }))
       .on('data', (row) => {
-        const en = row['0'];
-        const vi = row['1'];
-        result.push({ en: ` ${en} `, vi: ` ${vi} ` });
+        const en = String(row['1']).trim();
+        const vi = String(row['2']).trim();
+        result.push({ en, vi });
       })
       .on('error', (e) => {
         reject(e);
@@ -25,12 +25,18 @@ function readCSV(path) {
   });
 }
 
+readCSV('/home/manhnv/Downloads/raw_data.csv').then((r) => {
+  console.log(r.length);
+  console.log(r[1000]);
+  fs.writeFileSync('data.json', JSON.stringify(r));
+})
+
 async function connectMongo() {
   const mongoClient = new driver.MongoClient(url);
   await mongoClient.connect();
   return mongoClient;
 }
-0;
+
 
 async function findWords() {
   const client = await connectMongo();
@@ -104,7 +110,7 @@ async function main() {
   }
 }
 
-main().then(() => {});
+// main().then(() => {});
 
 const getBooks = async () => {
   const client = await connectMongo();
