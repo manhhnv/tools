@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:find-sentences": "node --experimental-specifier-resolution=node ./tools/find-sentences/main.js"
+    "start:find-sentences": "node --experimental-specifier-resolution=node ./tools/find-sentences/main.js",
+    "start:standardize": "node --experimental-specifier-resolution=node ./tools/standardize/main.js"
   },
   "keywords": [],
   "author": "",

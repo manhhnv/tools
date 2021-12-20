@@ -10,18 +10,31 @@ const main = async (book, unit, wordsCollection) => {
     allPrevWords(book.nId, unit.nId, wordsCollection),
   ]);
 
-  const regex = /[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~”“’‘’—◆​]/g;
+  const regex = /[!"#$%&'()*+,./:;<=>?@[\]^_`{|}~”“’‘’—◆​]/g;
   const matchSentences = (word) => {
+    // if (word.content !== "informed decision") return
     const index = wordsInUnit.findIndex((e) => e._id === word._id);
 
     if (index !== -1) {
+
+      const wordContent = String(word.content).trim().toLowerCase();
+
+      const openBracketIndex = wordContent.indexOf("(");
+      const closeBracketIndex = wordContent.indexOf(")");
+
       const results = { ...word };
       const sentences = [];
       const withoutPunctuation = new Set();
 
-      const content = String(word.content.trim().toLowerCase().replace(regex, ""));
+      let content = wordContent
+
+      if (openBracketIndex !== -1 && closeBracketIndex !== -1) {
+        content =  wordContent.slice(0, openBracketIndex) + wordContent.slice(closeBracketIndex + 1)
+      }
+      content = content.replace(regex, "").trim();
 
       const contentSplit = content.split(" ");
+      // console.log("contentSplit", contentSplit);
       const meanings = word.meaning
         .toLowerCase()
         .toLowerCase()
@@ -31,10 +44,11 @@ const main = async (book, unit, wordsCollection) => {
       const prev = [...wordsInUnit.slice(0, index), ...prevWords];
       const prevWordsContent = prev.map((e) => e.content);
       const notMatchVi = [];
+      const overMaxAllowedNewWords = [];
       for (const lm of text_lemmas) {
         if (text_lemmas.length <= 1) break;
         const en = lm.en.trim().replace(regex, "");
-        const unlearned = [];
+        const unlearned = new Set();
         let lemmas = lm.lemmas;
 
         lemmas = lemmas
@@ -45,24 +59,24 @@ const main = async (book, unit, wordsCollection) => {
         let contentCounter = 0;
 
         for (const item of contentSplit) {
+          if (contentCounter === contentSplit.length) break;
           if (lemmas.includes(item)) {
             contentCounter = contentCounter + 1;
           }
         }
-        if (contentCounter === contentSplit.length) {
+        if (contentCounter >= contentSplit.length) {
+          // console.log("contentCounter", contentCounter)
           let isContainMeaning = false;
           if (book.grade >= 6) {
             lemmas = lemmas.filter((e) => !commonWords.includes(e));
           }
-          let counter = 0;
           for (const w_lm of lemmas) {
             if (unlearned.length > 2) break;
             if (
               prevWordsContent?.length == 0 ||
               !prevWordsContent.includes(w_lm)
             ) {
-              unlearned.push(w_lm);
-              counter++;
+              unlearned.add(w_lm);
             }
           }
           for (const meaning of meanings) {
@@ -71,9 +85,12 @@ const main = async (book, unit, wordsCollection) => {
               break;
             }
           }
-          if (!isContainMeaning && counter <= 2) {
+          // console.log("counter", unlearned.size)
+          // console.log("unlearned", unlearned)
+          // console.log("isContainMeaning", isContainMeaning)
+          if (!isContainMeaning && unlearned.size <= 2) {
             notMatchVi.push({
-              en: en,
+              en: lm.en.trim(),
               vi: lm.vi.trim(),
               unlearned: unlearned,
               unlearnedCounter: unlearned.length,
@@ -83,7 +100,7 @@ const main = async (book, unit, wordsCollection) => {
             });
             continue;
           }
-          if (counter <= 2) {
+          if (unlearned.size <= 2) {
             if (!withoutPunctuation.has(en)) {
               sentences.push({
                 en: lm.en.trim(),
@@ -98,11 +115,37 @@ const main = async (book, unit, wordsCollection) => {
             }
             continue;
           }
+          else {
+            overMaxAllowedNewWords.push({
+              en: lm.en.trim(),
+              vi: lm.vi.trim(),
+              unlearned: unlearned,
+              unlearnedCounter: unlearned.length,
+              matchMeaning: isContainMeaning,
+              viSplit: lm.vi.split(" ").length,
+              enSplit: en.split(" ").length,
+            })
+          }
+        }
+        else if (en.includes(content) && sentences.length < 10) {
+          sentences.push({
+            en: lm.en.trim(),
+            vi: lm.vi.trim(),
+            unlearned: unlearned,
+            unlearnedCounter: 0,
+            matchMeaning: true,
+            viSplit: lm.vi.split(" ").length,
+            enSplit: en.split(" ").length,
+          });
         }
       }
       if (sentences?.length < 10) {
         const currentLen = 10 - sentences.length;
         sentences.push(...notMatchVi.slice(0, currentLen));
+      }
+      if (sentences?.length < 10) {
+        const currentLen = 10 - sentences.length;
+        sentences.push(...overMaxAllowedNewWords.slice(0, currentLen));
       }
       results["sentences"] = [...sentences];
       return results;
@@ -137,11 +180,12 @@ const root = async () => {
   const wordsCollection = dbo.collection("words");
   const booksCollection = dbo.collection("books");
 
-  const books = await booksCollection.find({grade: 1}).toArray();
+  const books = await booksCollection.find().toArray();
   // console.log(books);
   console.log(process.cwd());
 
   for (const book of books) {
+    if (book.name === "Tiếng Anh 9 Tập 1") continue;
     const units = book.units;
     for (const unit of units) {
       await main(book, unit, wordsCollection);

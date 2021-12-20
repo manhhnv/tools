@@ -32,7 +32,7 @@ export class GoogleSpreadsheetAPI {
     await this.sheetsV4.spreadsheets.values.clear(param);
   }
 
-  async writeAll(sheetName, data) {
+  async writeAll(sheetName, data, append = false) {
     if (sheetName.trim() || data?.length > 0) {
       const param = {
         spreadsheetId: this.spreadsheetId,
@@ -43,7 +43,16 @@ export class GoogleSpreadsheetAPI {
         },
         valueInputOption: "USER_ENTERED",
       };
-      await this.sheetsV4.spreadsheets.values.update(param);
+      if (append) await this.sheetsV4.spreadsheets.values.append(param);
+      else await this.sheetsV4.spreadsheets.values.update(param);
     }
+  }
+
+  async getSheet(sheetName) {
+    const res = await this.sheetsV4.spreadsheets.values.get({
+      spreadsheetId: this.spreadsheetId,
+      range: `${sheetName}`,
+    });
+    return res.data.values;
   }
 }

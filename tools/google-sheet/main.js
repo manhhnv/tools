@@ -2,6 +2,7 @@ import googleAuthorize from "./authorize";
 import { GoogleSpreadsheetAPI } from "./sheet";
 import * as fs from "fs";
 import * as path from "path";
+import { standardize } from '../standardize/main';
 
 const main = async () => {
   const auth = await googleAuthorize();
@@ -56,12 +57,13 @@ const main = async () => {
         }
       }
     }
+    standardize(sheetData);
     sheetData.push(...temp);
+    // console.log(sheetData.length);
     await googlSheet.clearAll(dir);
-    await googlSheet.writeAll(dir, sheetData);
-    // console.log(`${i}/${listNames.length}`);
+    await googlSheet.writeAll(dir, sheetData, false);
   }
-  await write('Tiếng Anh 9 Tập 2')
+  await write("Tiếng Anh 12 Tập 2")
 };
 
 const walkFiles = (directory) => {
